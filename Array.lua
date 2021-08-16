@@ -10,11 +10,10 @@ end
 
 function Array:insert(pos, value)
     local num = self.size
-    if num == 0 then
+    if pos > num then
         self[pos] = value
     end
     for i=1,num,1 do
-        print(i, pos)
         if(i == pos) then
             for j=num+1,i,-1 do
                 self[j] = self[j-1]
