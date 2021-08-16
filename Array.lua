@@ -1,70 +1,79 @@
-local array = {1,2,3,4,5}
+local Array = {}
 
-function array:size()
-    local int_num = 0
-    for _,v in ipairs(array) do
-        int_num = int_num + 1
-    end
-    return int_num
+function Array:array()
+    local test = {}
+    setmetatable(test, self)
+    self.__index = self
+    test.size = 0
+    return test
 end
 
-function array:insert(pos, value)
-    local num = array.size()
+function Array:insert(pos, value)
+    local num = self.size
+    if num == 0 then
+        self[pos] = value
+    end
     for i=1,num,1 do
+        print(i, pos)
         if(i == pos) then
             for j=num+1,i,-1 do
-                array[j] = array[j-1]
+                self[j] = self[j-1]
             end
-        array[i] = value
+            self[i] = value
         end
     end
+    self.size = self.size + 1
 end
 
-function array:remove(pos)
-    local num = array.size()
+function Array:remove(pos)
+    local num = self.size
     for i=1,num,1 do
         if i == pos then
             for j = i,num-1,1 do
-                array[j] = array[j+1]
+                self[j] = self[j+1]
             end
         end
     end
-    array[num] = nil
+    self[num] = nil
+    self.size = self.size - 1
 end
 
-function array:clear()
-    array = {}
+function Array:clear()
+    self = {}
+    
+    self.size = 0
 end
 
 -- 从后压
-function array:push(value)
-    local pos = array.size()
-    array[pos+1] = value
+function Array:push(value)
+    local pos = self.size
+    self[pos+1] = value
+    self.size = self.size + 1
 end
 
 -- 从后出
-function array:pop()
-    local pos = array.size()
-    local value = array[pos]
-    array[pos] = nil
+function Array:pop()
+    local pos = self.size
+    local value = self[pos]
+    self[pos] = nil
+    self.size = self.size - 1
     return value
 end
 
-function array:output()
-    for _,v in ipairs(array) do
+function Array:output()
+    for _,v in ipairs(self) do
         print(v)
     end
     print("\n")
 end
 
-local demo = array
-print(demo.size())
-demo.insert(self, 1, 6)
-demo.output()
-demo.remove(5)
-demo.output()
-demo.push(self, 9)
-demo.output()
-demo.pop()
-demo.output()
-demo.clear()
+local demo = Array:array()
+print(demo.size)
+demo:insert(1, 5)
+print(demo:output())
+demo:push(4)
+print(demo:output())
+demo:remove(1)
+print(demo:output())
+demo:pop()
+print(demo:output())
