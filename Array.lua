@@ -11,7 +11,7 @@ end
 
 function Array:insert(pos, value)
     local num = self.size
-    if pos > num+1 then
+    if pos > num or pos < 1 then
         print("插入位置不合法")
         print("*********************")
         return
@@ -25,7 +25,7 @@ end
 
 function Array:remove(pos)
     local num = self.size
-    if pos > num+1 then
+    if pos > num or pos < 1 then
         print("移除位置不合法")
         print("*********************")
         return
