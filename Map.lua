@@ -1,20 +1,30 @@
 local Map = {}
+local Node = {}
 
 local NodeEnum = {
     Black = 1,
     Red = 2
 }
 
-function map(key, value)
+function initNode(_key, _value, _color)
+    local node = {}
+    setmetatable(node, Node)
+    Node.__index = Node
+    node.key = _key or nil
+    node.value = _value or nil
+    node.color = _color or NodeEnum.Black
+    node.left = {}
+    node.right = {}
+    node.parent = {}
+    return node
+end
+
+function map()
     local test = {}
     setmetatable(test, Map)
     Map.__index = Map
-    test.color = NodeEnum.Black
-    test.key = key or nil
-    test.value = value or nil
-    test.left = {}
-    test.right = {}
-    test.parent = {}
+    local node = initNode(1,2)
+    test.root = node
     return test
 end
 
@@ -39,6 +49,10 @@ function setRed(node)
 end
 
 function setBlack(node)
+    if node == nil then
+        print("‰∏çÂ≠òÂú®Ê≠§ËäÇÁÇπÔºÅ")
+        return
+    end
     node.color = NodeEnum.Black
 end
 
@@ -79,7 +93,7 @@ function rotateRight(node)
 end
 
 function Map:insert(key, value)
-    local node = map(key, value)
+    local node = initNode(key, value)
     local test = {}
     local _root = self.root
     while _root ~= nil do
@@ -106,7 +120,6 @@ function insertFixup(node)
                 setBlack(test)
                 setRed(_test)
                 node = _test
-                continue
             end
             if test.right == node then
                 local temp = {}
@@ -125,7 +138,6 @@ function insertFixup(node)
                 setBlack(test)
                 setRed(_test)
                 node = _test
-                continue
             end
             if test.left == node then
                 local _temp = {}
@@ -139,7 +151,7 @@ function insertFixup(node)
             rotateLeft(_test)
         end
     end
-    setBlack(self.root)
+    setBlack(node.root)
 end
 
 function Map:remove(key)
@@ -150,11 +162,11 @@ function Map:remove(key)
     if node.left ~= nil and node.right ~= nil then
         local temp = node
         temp = temp.right
-        while temp.left ~- nil do
+        while temp.left ~= nil do
             temp = temp.left
         end
-        if node ~= nil and node.parent ~- nil then
-            if node ~= nil and node.parent.left = node then
+        if node ~= nil and node.parent ~= nil then
+            if node ~= nil and node.parent.left == node then
                 node.parent.left = temp
             else
                 node.parent.right = temp
@@ -216,7 +228,7 @@ function removeFixup(node, _parent)
     local test = {}
     while node == nil or isBlack(node) and node ~= self.root do
         if _parent.left == node then
-            test._parent.right
+            test = _parent.right
             if isRed(test) then
                 setBlack(test)
                 setRed(_parent)
@@ -241,6 +253,7 @@ function removeFixup(node, _parent)
                         test.color = _parent.color
                     else
                         test.color = NodeEnum.Black
+                    end
                 end
                 setBlack(_parent)
                 setBlack(test.right)
@@ -291,11 +304,16 @@ end
 
 function findNode(node, key)
     if key == nil or type(key) ~= "number" then
-        print("≤È’“À˜“˝÷µ≤ª’˝»∑£°")
+        print("Êü•ÊâæÁ¥¢ÂºïÂÄº‰∏çÊ≠£Á°ÆÔºÅ")
+        return
     end
-    if key < node.key then
+    if node.key == nil then
+        print("‰∏çÂ≠òÂú®Ê≠§ËäÇÁÇπÔºÅ")
+        return
+    end
+    if node.key > key then
         return findNode(node.left, key)
-    elseif key > node.key then
+    elseif node.key < key then
         return findNode(node.right, key)
     else
         return node
@@ -303,7 +321,12 @@ function findNode(node, key)
 end
 
 function Map:find(key)
-    findNode(self, key)
+    local node = findNode(self.root, key)
+    if node == nil then
+        return false
+    else
+        return true
+    end
 end
 
 function Map:output(node)
@@ -320,7 +343,8 @@ end
 
 local demo = map()
 demo:insert(1, 2)
-demo:insert(2, 3)
-demo:remove(1)
-local bool_Found = demo:find(2)
-demo:clear()
+-- print(demo.root.value)
+-- demo:insert(2, 3)
+-- demo:remove(1)
+-- local bool_Found = demo:find(2)
+-- demo:clear()
