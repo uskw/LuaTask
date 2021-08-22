@@ -29,6 +29,10 @@ function map()
 end
 
 function isRed(node)
+    if node == nil then
+        print("不存在此节点！")
+        return
+    end
     if node.color == NodeEnum.Red then
         return true
     else
@@ -37,6 +41,10 @@ function isRed(node)
 end
 
 function isBlack(node)
+    if node == nil then
+        print("不存在此节点！")
+        return
+    end
     if node.color == NodeEnum.Black then
         return true
     else
@@ -45,6 +53,10 @@ function isBlack(node)
 end
 
 function setRed(node)
+    if node == nil then
+        print("不存在此节点！")
+        return
+    end
     node.color = NodeEnum.Red
 end
 
@@ -57,15 +69,19 @@ function setBlack(node)
 end
 
 function rotateLeft(node)
+    if node == nil then
+        print("不存在此节点！")
+        return
+    end
     local test = node.right
     node.right = test.left
-    if test.left ~= nil then
+    if test.left.key ~= nil then
         test.left.parent = node
     end
     test.parent = node.parent
-    if node.parent == nil then
+    if node.parent.key == nil then
         self.root = test
-    elseif node.parent.left == node then
+    elseif node.parent.left.key == node.key then
         node.parent.left = test
     else
         node.parent.right = test
@@ -75,15 +91,19 @@ function rotateLeft(node)
 end
 
 function rotateRight(node)
+    if node == nil then
+        print("不存在此节点！")
+        return
+    end
     local test = node.left
     node.left = test.right
-    if test.right ~= nil then
+    if test.right.key ~= nil then
         test.right.parent = node
     end
     test.parent = node.parent
-    if node.parent == nil then
+    if node.parent.key == nil then
         self.root = test
-    elseif node == node.parent.right then
+    elseif node.key == node.parent.right.key then
         node.parent.right = test
     else
         node.parent.left = test
@@ -96,13 +116,23 @@ function Map:insert(key, value)
     local node = initNode(key, value)
     local test = {}
     local _root = self.root
-    while _root ~= nil do
+    while _root.key ~= nil do
         test = _root
-        if node.key ~= _root.key then
+        if node.key < _root.key then
             _root = _root.left
         else
             _root = _root.right
         end
+    end
+    node.parent = test
+    if test.key ~= nil then
+        if node.key < test.key then
+            test.left = node
+        else
+            test.right = node
+        end
+    else
+        self.root = node
     end
     node.color = NodeEnum.Red
     insertFixup(node)
@@ -111,15 +141,16 @@ end
 function insertFixup(node)
     local test = node.parent or {}
     local _test = {}
-    while test ~= nil and isRed(test) do
-        test = test.parent or {}
+    while test.key ~= nil and isRed(test) do
+        _test = test.parent or {}
         if test == _test.left then
             local uNode = _test.right
-            if uNode ~= nil and isRed(uNode) then
+            if uNode.key ~= nil and isRed(uNode) then
                 setBlack(uNode)
                 setBlack(test)
                 setRed(_test)
                 node = _test
+                test = test.parent
             end
             if test.right == node then
                 local temp = {}
@@ -133,18 +164,19 @@ function insertFixup(node)
             rotateRight(_test)
         else
             local _uNode = _test.left
-            if _uNode ~= nil and isRed(_uNode) then
+            if _uNode.key ~= nil and isRed(_uNode) then
                 setBlack(_uNode)
                 setBlack(test)
                 setRed(_test)
                 node = _test
+                test = test.parent
             end
             if test.left == node then
                 local _temp = {}
                 rotateRight(test)
-                temp = test
+                _temp = test
                 test = node
-                node = temp
+                node = _temp
             end
             setBlack(test)
             setRed(_test)
@@ -329,22 +361,22 @@ function Map:find(key)
     end
 end
 
-function Map:output(node)
-    if node ~= nil then
-        self:output(node.left)
-        print(node.value, " ")
-        self:output(node.right)
+function printNode(node)
+    if node.left ~= nil then
+        printNode(node.left)
+    elseif node.right ~= nil then
+        printNode(node.right)
     end
+    if node.value ~= nil then
+        print(node.key, " ", node.value)
+    end
+end
+
+function Map:output()
+    printNode(self.root)
+    print("***************")
 end
 
 function Map:clear()
     self.root = {}
 end
-
-local demo = map()
-demo:insert(1, 2)
--- print(demo.root.value)
--- demo:insert(2, 3)
--- demo:remove(1)
--- local bool_Found = demo:find(2)
--- demo:clear()
