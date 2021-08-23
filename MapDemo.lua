@@ -1,0 +1,13 @@
+local map = require("map")
+
+local demo = map()
+demo:insert(1, 2)
+demo:output()
+demo:insert(2, 3)
+demo:output()
+demo:remove(1)
+demo:output()
+local bool_Found = demo:find(2)
+print(bool_Found)
+demo:clear()
+demo:output()

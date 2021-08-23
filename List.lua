@@ -1,50 +1,78 @@
 local List = {}
+List.__index = List
 local Node = {}
+Node.__index = Node
 
 function initNode(value)
     local node = {}
     setmetatable(node, Node)
-    Node.__index = Node
     node.prev = node
-    node.next = node
+    node.next = {}
     node.value = value
     return node
 end
 
 function list()
-    local test = {}
-    setmetatable(test, List)
-    List.__index = List
-    local node = initNode()
-    test.head = node
-    test.tail = node
-    test.size = 0
-    return test
+    local newList = {}
+    setmetatable(newList, List)
+    newList.head = {}
+    newList.tail = {}
+    newList.size = 0
+    return newList
 end
 
 function List:push(value)
+    if type(value) ~= "number" then
+        print("压入列表数值不合法\n********************")
+        return
+    end
     local node = initNode(value)
-    node.next = self.tail
-    node.prev = self.tail.prev
-    self.tail.prev.next = node
-    self.tail.prev = node
+    if self.size == 0 then
+        self.head = node
+        self.tail = node
+        node.prev = node
+        node.next = {}
+        self.size = 1
+        return node
+    end
+    node.next = {}
+    node.prev = self.tail
+    self.tail.next = node
+    self.tail = node
     self.size = self.size + 1
     return node
 end
 
 function List:insert(node, value)
+    if type(value) ~= "number" then
+        print("插入列表数值不合法\n********************")
+        return
+    end
+    if node == nil then
+        print("列表中没有参数node\n********************")
+        return
+    end
     local test = initNode(value)
     test.next = node.next
     test.prev = node
     node.next.prev = test
     node.next = test
+    if node == self.tail then
+        self.tail = test
+    end
     self.size = self.size + 1
 end
 
 function List:remove(node)
-    if node.next == nil then
-        node.next = node
-        node.prev = node
+    if node == nil then
+        print("列表中没有参数node\n********************")
+        return
+    end
+    if node.next.value == nil then
+        self.tail = node.prev
+        node.prev.next = {}
+        node.prev = nil
+        node.next = nil
     else
         node.next.prev = node.prev
         node.prev.next = node.next
@@ -52,6 +80,10 @@ function List:remove(node)
         node.next = nil
     end
     self.size = self.size - 1
+    if self.size == 0 then
+        self.head = {}
+        self.tail = {}
+    end
 end
 
 function List:getHead()
@@ -72,7 +104,7 @@ end
 
 function List:popAll()
     while self.size ~= 0 do
-        local node = self.head
+        local node = self.tail
         self:remove(node)
     end
     print("全部pop完成")
@@ -80,15 +112,17 @@ end
 
 function iter(_Head)
     return function()
+        if _Head.value ~= nil then
+            _Value = _Head.value
+            _Head = _Head.next
+            return _Value
+        end
         local _Value = nil
-        _Value = _Head.value
-        _Head = _Head.next
-        return _Value
     end
 end
 
 function List:output()
-    local _Head = self.head.next
+    local _Head = self.head
     for v in iter(_Head) do
         if(v) then
             print(v)
@@ -99,22 +133,4 @@ function List:output()
     print("*********************")
 end
 
-local demo = list()
-local node1 = demo:push(1)
-demo:output()
-local node2 = demo:push(2)
-demo:output()
-local node3 = demo:insert(node1, 3)
-demo:output()
-demo:remove(node2)
-demo:output()
-local nodeHead = demo:getHead()
-print(nodeHead.next.value)
-local nodeTail = demo:getTail()
-print(nodeTail.prev.value)
-local _pre = nodeTail:getPre()
-print(_pre.value)
-local _next = nodeHead:getNext()
-print(_next.value,"\n********************")
-demo:popAll()
-demo:output()
+return list

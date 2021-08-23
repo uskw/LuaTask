@@ -1,5 +1,7 @@
 local Map = {}
+Map.__index = Map
 local Node = {}
+Node.__index = Node
 
 local NodeEnum = {
     Black = 1,
@@ -9,7 +11,6 @@ local NodeEnum = {
 function initNode(_key, _value, _color)
     local node = {}
     setmetatable(node, Node)
-    Node.__index = Node
     node.key = _key or nil
     node.value = _value or nil
     node.color = _color or NodeEnum.Black
@@ -20,17 +21,16 @@ function initNode(_key, _value, _color)
 end
 
 function map()
-    local test = {}
-    setmetatable(test, Map)
-    Map.__index = Map
-    local node = initNode(1,2)
-    test.root = node
-    return test
+    local newMap = {}
+    setmetatable(newMap, Map)
+    local node = initNode()
+    newMap.root = node
+    return newMap
 end
 
 function isRed(node)
     if node == nil then
-        print("不存在此节点！")
+        print("1不存在此节点！")
         return
     end
     if node.color == NodeEnum.Red then
@@ -42,7 +42,7 @@ end
 
 function isBlack(node)
     if node == nil then
-        print("不存在此节点！")
+        print("2不存在此节点！")
         return
     end
     if node.color == NodeEnum.Black then
@@ -54,7 +54,7 @@ end
 
 function setRed(node)
     if node == nil then
-        print("不存在此节点！")
+        print("3不存在此节点！")
         return
     end
     node.color = NodeEnum.Red
@@ -62,15 +62,15 @@ end
 
 function setBlack(node)
     if node == nil then
-        print("不存在此节点！")
+        print("4不存在此节点！")
         return
     end
     node.color = NodeEnum.Black
 end
 
-function rotateLeft(node)
+function Map:rotateLeft(node)
     if node == nil then
-        print("不存在此节点！")
+        print("5不存在此节点！")
         return
     end
     local test = node.right
@@ -81,18 +81,20 @@ function rotateLeft(node)
     test.parent = node.parent
     if node.parent.key == nil then
         self.root = test
-    elseif node.parent.left.key == node.key then
-        node.parent.left = test
     else
-        node.parent.right = test
+        if node.parent.left.key == node.key then
+            node.parent.left = test
+        else
+            node.parent.right = test
+        end
     end
     test.left = node
     node.parent = test
 end
 
-function rotateRight(node)
+function Map:rotateRight(node)
     if node == nil then
-        print("不存在此节点！")
+        print("6不存在此节点！")
         return
     end
     local test = node.left
@@ -103,20 +105,31 @@ function rotateRight(node)
     test.parent = node.parent
     if node.parent.key == nil then
         self.root = test
-    elseif node.key == node.parent.right.key then
-        node.parent.right = test
     else
-        node.parent.left = test
+        if node.key == node.parent.right.key then
+            node.parent.right = test
+        else
+            node.parent.left = test
+        end
     end
     test.right = node
     node.parent = test
 end
 
 function Map:insert(key, value)
+    if type(key) ~= "number" then
+        print("插入节点索引值不正确")
+        return
+    end
     local node = initNode(key, value)
-    local test = {}
     local _root = self.root
-    while _root.key ~= nil do
+    local test = {}
+    if _root.key == nil then
+        self.root = node
+        setBlack(self.root)
+        return
+    end
+    while _root.right ~= nil do
         test = _root
         if node.key < _root.key then
             _root = _root.left
@@ -135,70 +148,79 @@ function Map:insert(key, value)
         self.root = node
     end
     node.color = NodeEnum.Red
-    insertFixup(node)
+    self:insertFixup(node)
 end
 
-function insertFixup(node)
+function Map:insertFixup(node)
     local test = node.parent or {}
     local _test = {}
     while test.key ~= nil and isRed(test) do
-        _test = test.parent or {}
-        if test == _test.left then
-            local uNode = _test.right
-            if uNode.key ~= nil and isRed(uNode) then
-                setBlack(uNode)
+        for i = 1, 1, 1 do
+            _test = test.parent or {}
+            if test.key == _test.left.key then
+                local uNode = _test.right
+                if uNode.key ~= nil and isRed(uNode) then
+                    setBlack(uNode)
+                    setBlack(test)
+                    setRed(_test)
+                    node = _test
+                    -- test = test.parent
+                    break
+                end
+                if test.right.key == node.key then
+                    local temp = {}
+                    self:rotateLeft(test)
+                    temp = test
+                    test = node
+                    node = temp
+                end
                 setBlack(test)
                 setRed(_test)
-                node = _test
-                test = test.parent
-            end
-            if test.right == node then
-                local temp = {}
-                rotateLeft(test)
-                temp = test
-                test = node
-                node = temp
-            end
-            setBlack(test)
-            setRed(_test)
-            rotateRight(_test)
-        else
-            local _uNode = _test.left
-            if _uNode.key ~= nil and isRed(_uNode) then
-                setBlack(_uNode)
+                self:rotateRight(_test)
+            else
+                local _uNode = _test.left
+                if _uNode.key ~= nil and isRed(_uNode) then
+                    setBlack(_uNode)
+                    setBlack(test)
+                    setRed(_test)
+                    node = _test
+                    -- test = test.parent
+                    break
+                end
+                if test.left.key == node.key then
+                    local _temp = {}
+                    self:rotateRight(test)
+                    _temp = test
+                    test = node
+                    node = _temp
+                end
                 setBlack(test)
                 setRed(_test)
-                node = _test
-                test = test.parent
+                self:rotateLeft(_test)
             end
-            if test.left == node then
-                local _temp = {}
-                rotateRight(test)
-                _temp = test
-                test = node
-                node = _temp
-            end
-            setBlack(test)
-            setRed(_test)
-            rotateLeft(_test)
         end
+        test = node.parent
     end
-    setBlack(node.root)
+    setBlack(self.root)
 end
 
 function Map:remove(key)
-    local node = Map:find(key)
+    local node = findNode(self.root, key)
+    if node == nil then
+        print("7不存在此节点！")
+        return
+    end
     local _child = {}
     local _parent = {}
     local _color = nil
-    if node.left ~= nil and node.right ~= nil then
+    if node.left.key ~= nil and node.right.key ~= nil then
         local temp = node
         temp = temp.right
-        while temp.left ~= nil do
+        while temp.left.key ~= nil do
             temp = temp.left
         end
-        if node ~= nil and node.parent ~= nil then
-            if node ~= nil and node.parent.left == node then
+        if node.key ~= nil and node.parent.key ~= nil then
+            if node.parent.left.key == node.key then
                 node.parent.left = temp
             else
                 node.parent.right = temp
@@ -207,14 +229,14 @@ function Map:remove(key)
             self.root = temp
         end
         _child = temp.right
-        if temp ~= nil then
+        if temp.key ~= nil then
             _parent = temp.parent
             _color = temp.color
         end
-        if _parent == node then
+        if _parent.key == node.key then
             _parent = temp
         else
-            if _child ~= nil then
+            if _child.key ~= nil then
                 _child.parent = _parent
             end
             _parent.left = _child
@@ -226,23 +248,23 @@ function Map:remove(key)
         temp.left = node.left
         node.left.parent = temp
         if _color == NodeEnum.Black then
-            removeFixup(_child, _parent)
+            self:removeFixup(_child, _parent)
         end
-        node = nil
+        node = {}
         return
     end
-    if node.left ~= nil then
+    if node.left.key ~= nil then
         _child = node.left
     else
         _child = node.right
     end
     _parent = node.parent
     _color = node.color
-    if _child ~= nil then
+    if _child.key ~= nil then
         _child.parent = _parent
     end
-    if _parent ~= nil then
-        if _parent.left == node then
+    if _parent.key ~= nil then
+        if _parent.left.key == node.key then
             _parent.left = _child
         else
             _parent.right = _child
@@ -251,33 +273,33 @@ function Map:remove(key)
         self.root = _child
     end
     if _color == NodeEnum.Black then
-        removeFixup(_child, _parent)
+        self:removeFixup(_child, _parent)
     end
     node = {}
 end
 
-function removeFixup(node, _parent)
+function Map:removeFixup(node, _parent)
     local test = {}
-    while node == nil or isBlack(node) and node ~= self.root do
-        if _parent.left == node then
+    while node.key == nil or isBlack(node) and node.key ~= self.root.key do
+        if _parent.left.key == node.key then
             test = _parent.right
             if isRed(test) then
                 setBlack(test)
                 setRed(_parent)
-                rotateLeft(_parent)
+                self:rotateLeft(_parent)
                 test = _parent.right
             end
-            if test.left == nil or isBlack(test.left) and test.right == nil or isBlack(test.right) then
+            if test.left.key == nil or isBlack(test.left) and test.right.key == nil or isBlack(test.right) then
                 setRed(test)
                 node = _parent
                 if node ~= nil then
                     _parent = node.parent
                 end
             else
-                if test.right == nil or isBlack(test.right) then
+                if test.right.key == nil or isBlack(test.right) then
                     setBlack(test.left)
                     setRed(test)
-                    rotateRight(test)
+                    self:rotateRight(test)
                     test = _parent.right
                 end
                 if test ~= nil then
@@ -289,7 +311,7 @@ function removeFixup(node, _parent)
                 end
                 setBlack(_parent)
                 setBlack(test.right)
-                rotateLeft(_parent)
+                self:rotateLeft(_parent)
                 node = self.root
                 break
             end
@@ -298,10 +320,10 @@ function removeFixup(node, _parent)
             if isRed(test) then
                 setBlack(test)
                 setRed(_parent)
-                rotateRight(_parent)
+                self:rotateRight(_parent)
                 test = _parent.left
             end
-            if test.left == nil or isBlack(test.left) and test.right == nil or isBlack(test.right) then
+            if test.left.key == nil or isBlack(test.left) and test.right.key == nil or isBlack(test.right) then
                 setRed(test)
                 node = _parent
                 if node ~= nil then
@@ -311,7 +333,7 @@ function removeFixup(node, _parent)
                 if test.left == nil or isBlack(test.left) then
                     setBlack(test.right)
                     setRed(test)
-                    rotateLeft(test)
+                    self:rotateLeft(test)
                     test = _parent.left
                 end
                 if test ~= nil then
@@ -323,7 +345,7 @@ function removeFixup(node, _parent)
                 end
                 setBlack(_parent)
                 setBlack(test.left)
-                rotateRight(_parent)
+                self:rotateRight(_parent)
                 node = self.root
                 break
             end
@@ -340,7 +362,7 @@ function findNode(node, key)
         return
     end
     if node.key == nil then
-        print("不存在此节点！")
+        print("8不存在此节点！")
         return
     end
     if node.key > key then
@@ -362,17 +384,26 @@ function Map:find(key)
 end
 
 function printNode(node)
+    if node == nil then
+        print("9不存在此节点！")
+        return
+    end
     if node.left ~= nil then
         printNode(node.left)
-    elseif node.right ~= nil then
-        printNode(node.right)
     end
     if node.value ~= nil then
-        print(node.key, " ", node.value)
+        print("node.key =", node.key, " node.value =", node.value, " node.color =", node.color == 1 and "Black" or "Red")
+    end
+    if node.right ~= nil then
+        printNode(node.right)
     end
 end
 
 function Map:output()
+    if self.root.key == nil then
+        print("当前红黑树为空\n***************")
+        return
+    end
     printNode(self.root)
     print("***************")
 end
@@ -380,3 +411,5 @@ end
 function Map:clear()
     self.root = {}
 end
+
+return map
