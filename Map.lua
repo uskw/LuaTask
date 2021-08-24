@@ -20,7 +20,7 @@ function initNode(_key, _value, _color)
     return node
 end
 
-function map()
+local function map()
     local newMap = {}
     setmetatable(newMap, Map)
     local node = initNode()

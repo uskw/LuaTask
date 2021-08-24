@@ -1,7 +1,7 @@
 local Str = {}
 Str.__index = Str
 
-function String(strTable)
+local function String(strTable)
     if type(strTable) ~= "table" then
         print("初始化对象不合法\n*********************")
         return
@@ -50,7 +50,7 @@ function Str:reset(test)
     end
     if self.length > num then
         for i = num + 1, self.length, 1 do
-            self.data[i] = {}
+            self.data[i] = nil
         end
     end
     self.length = num

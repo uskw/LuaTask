@@ -1,7 +1,7 @@
 local Array = {}
 Array.__index = Array
 
-function array()
+local function array()
     local newArray = {}
     setmetatable(newArray, Array)
     newArray.data = {}

@@ -12,7 +12,7 @@ function initNode(value)
     return node
 end
 
-function list()
+local function list()
     local newList = {}
     setmetatable(newList, List)
     newList.head = {}
