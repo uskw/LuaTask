@@ -129,7 +129,7 @@ function Map:insert(key, value)
         setBlack(self.root)
         return
     end
-    while _root.right ~= nil do
+    while _root ~= nil and _root.right ~= nil do
         test = _root
         if node.key < _root.key then
             _root = _root.left
